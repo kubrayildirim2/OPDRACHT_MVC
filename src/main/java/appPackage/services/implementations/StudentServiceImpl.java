@@ -44,7 +44,16 @@ public class StudentServiceImpl implements StudentService {
     @Override
     public Student createStudent(Student student) {
 
-       return null;
+        boolean userNameExist = getStudentByUsername(student.getUserName()) != null;
+        if (!userNameExist){
+
+            studentRepository.save(student);
+
+            return student;
+
+        }
+
+        return null;
     }
 
 

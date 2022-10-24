@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -41,7 +42,19 @@ public class LoanReceiptImpl implements LoanReceiptService {
     //TODO: Example2: A computer has been loaned on 11/07/2022 and not yet returned. It's only been 2 months, this should not be on the list
     @Override
     public List<LoanReceipt> getAllOpenReceiptsLongerThan9Months() {
-        return null;
+        List<LoanReceipt> resultList = new ArrayList<>();
+        List<LoanReceipt> openReceiptList = getAllOpenReceipts();
+        for (LoanReceipt receipt : openReceiptList){
+            LocalDate dateNow = LocalDate.now();
+            LocalDate nineMonthsBefore = dateNow.minusMonths(9);
+
+            if (receipt.getStartDate().isBefore(nineMonthsBefore)){
+                resultList.add(receipt);
+            }
+
+        }
+
+        return resultList;
     }
 
     //TODO: make a Method that lends a computer to a student. Make sure that the student is not blacklisted
@@ -49,6 +62,20 @@ public class LoanReceiptImpl implements LoanReceiptService {
     //TODO: If it was succesful, the method returns true. When lending, startDate is today
     @Override
     public boolean loanComputerToStudent(Computer computer, Student student) {
+
+        boolean isStudentBlacklisted =  student.isOnBlackList();
+        boolean hasAComputer = checkIfStudentCurrentlyOwnsPC(student)!=null;
+        boolean pcInUse = isPcInUse(computer);
+
+        if ( !isStudentBlacklisted && !hasAComputer && !pcInUse){
+            LoanReceipt loanReceipt = new LoanReceipt();
+            loanReceipt.setStartDate(LocalDate.now());
+            loanReceipt.setLoanedComputer(computer);
+            loanReceipt.setLoanedTo(student);
+            loanReceiptRepository.save(loanReceipt);
+
+            return true;
+        }
         
         return false;
     }
